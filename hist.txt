@@ -1,0 +1,69 @@
+    1  git config --global credential.helper cache
+    2  git status
+    3  git config --global credential.helper cache
+    4  lab-configure
+    5  git clone https://github.com/isilval/DO180-apps
+    6  ls
+    7  cd DO180-apps/
+    8  git status
+    9  git checkout -b testbranch
+   10  git status
+   11  echo "DO180" > TEST
+   12  ls
+   13  git add .
+   14  git commit -am "DO180"
+   15  git push --set-upstream origin testbranch
+   16  echo "OCP4.6" > TEST
+   17  git add .
+   18  git commit -am "OCP4.6"
+   19  git push
+   20  pwd
+   21  head README.md 
+   22  wc README.md 
+   23  cd ~
+   24  pwd
+   25  podman search rhel
+   26  podman pull rhel
+   27  podman images
+   28  podman run ubi8/ubi:8.3 echo 'Hello world!'
+   29  podman images
+   30  podman run -d -p 8080 registry.redhat.io/rhel8/httpd-24
+   31  podman ps -a
+   32  podman run -it ubi8/ubi:8.3 /bin/bash
+   33  podman ps -a
+   34  lab container-create start
+   35  podman ps -a
+   36  podman login registry.redhat.io
+   37  podman run --name mysql-basic > -e MYSQL_USER=user1 -e MYSQL_PASSWORD=mypa55 > -e MYSQL_DATABASE=items -e MYSQL_ROOT_PASSWORD=r00tpa55 > -d registry.redhat.io/rhel8/mysql-80:1
+   38  podman run --name mysql-basic -e MYSQL_USER=user1 -e MYSQL_PASSWORD=mypa55 -e MYSQL_DATABASE=items -e MYSQL_ROOT_PASSWORD=r00tpa55 -d registry.redhat.io/rhel8/mysql-80:1
+   39  podman ps
+   40  podman ps --format "{{.ID}} {{.Image}} {{.Names}}"
+   41  podman exec -it mysql-basic /bin/bash
+   42  lab container-create finish
+   43  podman images
+   44  podman ps
+   45  podman ps -a
+   46  podman run -it ubi8/ubi:8.3 /bin/bash
+   47  lab container-rootless start
+   48  sudo podman run --rm --name asroot -ti registry.access.redhat.com/ubi8:latest /bin/bash
+   49  podman run --rm --name asuser -ti registry.access.redhat.com/ubi8:latest /bin/bash
+   50  lab container-rootless finish
+   51  lab container-review start
+   52  podman run -d -p 8080:80 --name httpd-basic quay.io/redhattraining/httpd-parent:2.4
+   53  podman ps
+   54  podman exec -it httpd-basic /bin/bash
+   55  podman ps
+   56  curl http://localhost:80
+   57  curl http://localhost:8080
+   58  podman exec -it httpd-basic /bin/bash
+   59  curl http://localhost:8080
+   60  podman exec -it httpd-basic /bin/bash
+   61  curl http://localhost:8080
+   62  lab container-review grade
+   63  lab container-review finish
+   64  podman ps
+   65  podman images
+   66  history
+   67  pwd
+   68  ls
+   69  history > hist.txt
