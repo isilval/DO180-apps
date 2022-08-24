@@ -1,0 +1,379 @@
+    1  mysql -uuser1 -pmypa55 --protocol tcp -h localhost
+    2  exit
+    3  history
+    4  lab openshift-resources start
+    5  GE
+    6  lab-configure
+    7  lab openshift-resources start
+    8  source /usr/local/etc/ocp4.config
+    9  vi /usr/local/etc/ocp4.config
+   10  oc login -u ${RHT_OCP4_DEV_USER} -p ${RHT_OCP4_DEV_PASSWORD} ${RHT_OCP4_MASTER_API}
+   11  oc new-project ${RHT_OCP4_DEV_USER}-mysql-openshift
+   12  oc new-app --template=mysql-persistent -p MYSQL_USER=user1 -p MYSQL_PASSWORD=mypa55 -p MYSQL_DATABASE=testdb -p MYSQL_ROOT_PASSWORD=r00tpa55 -p VOLUME_CAPACITY=10Gi
+   13  oc status
+   14  oc get pods
+   15  oc describe pod mysql-1-v5mtn
+   16  oc get svc
+   17  oc describe svc mysql
+   18  oc get pvc
+   19  oc describe pvc mysql
+   20  oc port-forward mysql-1-5vfn4 3306:3306
+   21  oc get pods
+   22  oc port-forward mysql-1-v5mtn 3306:3306
+   23  oc delete project ${RHT_OCP4_DEV_USER}-mysql-openshift
+   24  lab openshift-resources finish
+   25  oc get pods
+   26  oc get pod --all-namespaces | grep router
+   27  lab openshift-routes start
+   28  source /usr/local/etc/ocp4.config
+   29  oc login -u ${RHT_OCP4_DEV_USER} -p ${RHT_OCP4_DEV_PASSWORD} ${RHT_OCP4_MASTER_API}
+   30  oc new-project ${RHT_OCP4_DEV_USER}-route
+   31  oc new-app --docker-image=quay.io/redhattraining/php-hello-dockerfile --name php-helloworld
+   32  oc get pods -w
+   33  oc logs -f php-helloworld-74bb86f6cb-zt6wl
+   34  oc logs -f php-helloworld-74bb86f6cb-w4n8q
+   35  oc describe svc/php-helloworld
+   36  oc expose svc/php-helloworld
+   37  oc describe route
+   38  echo php-helloworld-${RHT_OCP4_DEV_USER}-route.${RHT_OCP4_WILDCARD_DOMAIN}
+   39  curl php-helloworld-${RHT_OCP4_DEV_USER}-route.${RHT_OCP4_WILDCARD_DOMAIN}
+   40  oc delete route/php-helloworld
+   41  oc expose svc/php-helloworld --name=${RHT_OCP4_DEV_USER}-xyz
+   42  oc describe route
+   43  curl ${RHT_OCP4_DEV_USER}-xyz-${RHT_OCP4_DEV_USER}-route.${RHT_OCP4_WILDCARD_DOMAIN}
+   44  lab openshift-routes finish
+   45  oc get is -n openshift
+   46  history | grep new-app
+   47  lab openshift-s2i start
+   48  git clone https://github.com/isilval/DO180-apps
+   49  lab openshift-s2i start
+   50  ls
+   51  cd DO180-apps/
+   52  git checkout master
+   53  git checkout -b s2i
+   54  git push -u origin s2i
+   55  vi php-helloworld/index.php 
+   56  source /usr/local/etc/ocp4.config
+   57  oc login -u ${RHT_OCP4_DEV_USER} -p ${RHT_OCP4_DEV_PASSWORD} ${RHT_OCP4_MASTER_API}
+   58  oc new-project ${RHT_OCP4_DEV_USER}-s2i
+   59  oc new-app php:7.3 --name=php-helloworld https://github.com/${RHT_OCP4_GITHUB_USER}/DO180-apps#s2i --context-dir php-helloworld
+   60  oc get pods
+   61  oc logs --all-containers -f php-helloworld-1-build
+   62  oc describe deployment/php-helloworld
+   63  oc expose service php-helloworld  --name ${RHT_OCP4_DEV_USER}-helloworld
+   64  oc get route -o jsonpath='{..spec.host}{"\n"}'
+   65  curl -s ${RHT_OCP4_DEV_USER}-helloworld-${RHT_OCP4_DEV_USER}-s2i.${RHT_OCP4_WILDCARD_DOMAIN}
+   66  vi php-helloworld/index.php 
+   67  cd php-helloworld/
+   68  git status
+   69  git add .
+   70  git commit -m 'Changed index page contents.'
+   71  git push origin s2i
+   72  oc start-build php-helloworld
+   73  oc logs php-helloworld-2-build -f
+   74  oc get pods
+   75  curl -s ${RHT_OCP4_DEV_USER}-helloworld-${RHT_OCP4_DEV_USER}-s2i.${RHT_OCP4_WILDCARD_DOMAIN}
+   76  lab openshift-s2i finish
+   77  history
+   78  lab openshift-webconsole start
+   79  curl https://api.na46a.prod.ole.redhat.com:6443/
+   80  lab openshift-webconsole start
+   81  cd DO180-apps/
+   82  git checkout master
+   83  git checkout -b console
+   84  git push -u origin console
+   85  cat php-helloworld/index.php 
+   86  source /usr/local/etc/ocp4.config
+   87  echo $RHT_OCP4_WILDCARD_DOMAIN
+   88  git status
+   89  ls
+   90  cd php-helloworld/
+   91  vi index.php 
+   92  cat index.php 
+   93  git add index.php 
+   94  git commit -m 'updated app'
+   95  git push origin console
+   96  lab openshift-webconsole finish
+   97  lab openshift-review start
+   98  source /usr/local/etc/ocp4.config
+   99  oc login -u ${RHT_OCP4_DEV_USER} -p ${RHT_OCP4_DEV_PASSWORD} ${RHT_OCP4_MASTER_API}
+  100  oc new-project ${RHT_OCP4_DEV_USER}-ocp
+  101  oc new-app php:7.3~https://github.com/RedHatTraining/DO180-apps --context-dir temps --name temps
+  102  oc status
+  103  oc logs -f bc/temps
+  104  oc get pods -w
+  105  oc get pods
+  106  oc expose svc/temps
+  107  oc get route/temps
+  108  lab openshift-review grade
+  109  lab openshift-review finish
+  110  cd /home/student/DO180/labs/multicontainer-application
+  111  mysql -uuser1 -h 127.0.0.1 -pmypa55 -P3306 items < db.sql
+  112  cd /home/student/DO180/labs/multicontainer-openshift
+  113  mysql -uuser1 -h 127.0.0.1 -pmypa55 -P3306 items < db.sql
+  114  history
+  115  ls
+  116  lab multicontainer-design start
+  117  podman login registry.redhat.io
+  118  vi /home/student/DO180/labs/multicontainer-design/deploy/nodejs/Containerfile
+  119  ip -br addr list | grep eth0
+  120  vi /home/student/DO180/labs/multicontainer-design/deploy/nodejs/nodejs-source/models/db.js
+  121  ls
+  122  ls DO180
+  123  cd ~/DO180/labs/multicontainer-design/deploy/nodejs
+  124  vi build.sh 
+  125  ./build.sh 
+  126  podman images --format "table {{.ID}} {{.Repository}} {{.Tag}}"
+  127  vi /home/student/DO180/labs/multicontainer-design/deploy/nodejs/networked/run.sh
+  128  diff /home/student/DO180/labs/multicontainer-design/deploy/nodejs/networked/run.sh /home/student/DO180/solutions/multicontainer-design/deploy/nodejs/networked/run.sh
+  129  vi /home/student/DO180/labs/multicontainer-design/deploy/nodejs/networked/run.sh
+  130  diff /home/student/DO180/labs/multicontainer-design/deploy/nodejs/networked/run.sh /home/student/DO180/solutions/multicontainer-design/deploy/nodejs/networked/run.sh
+  131  cd /home/student/DO180/labs/multicontainer-design/deploy/nodejs/networked
+  132  ./run.sh 
+  133  podman ps --format="table {{.ID}} {{.Names}} {{.Image}} {{.Status}}"
+  134  mysql -uuser1 -h 172.25.250.9 -pmypa55 -P30306 items < /home/student/DO180/labs/multicontainer-design/deploy/nodejs/networked/db.sql
+  135  podman exec -it todoapi env
+  136  curl -w "\n" http://127.0.0.1:30080/todo/api/items/1
+  137  cd ~
+  138  lab multicontainer-design finish
+  139  podman ps
+  140  podman images
+  141  history
+  142  lab multicontainer-application start
+  143  source /usr/local/etc/ocp4.config
+  144  oc login -u ${RHT_OCP4_DEV_USER} -p ${RHT_OCP4_DEV_PASSWORD} ${RHT_OCP4_MASTER_API}
+  145  oc new-project ${RHT_OCP4_DEV_USER}-application
+  146  cd /home/student/DO180/labs/multicontainer-application
+  147  vi todo-app.yml 
+  148  oc create  -f todo-app.yml
+  149  vi todo-app.yml 
+  150  oc get pods -w
+  151  oc port-forward mysql 3306:3306
+  152  oc expose service todoapi
+  153  oc status | grep -o "http:.*com"
+  154  curl -w "\n" $(oc status | grep -o "http:.*com")/todo/api/items/1
+  155  cd ~
+  156  lab multicontainer-application finish
+  157  oc get templates -n openshift
+  158  oc get ns
+  159  oc get template mysql-persistent -n openshift -o yaml
+  160  lab multicontainer-openshift start
+  161  source /usr/local/etc/ocp4.config
+  162  oc login -u ${RHT_OCP4_DEV_USER} -p ${RHT_OCP4_DEV_PASSWORD} ${RHT_OCP4_MASTER_API}
+  163  oc new-project ${RHT_OCP4_DEV_USER}-template
+  164  cd /home/student/DO180/labs/multicontainer-openshift
+  165  vi todo-template.json 
+  166  oc process -f todo-template.json | oc create -f -
+  167  oc get pods -w
+  168  oc port-forward mysql 3306:3306
+  169  oc expose service todoapi
+  170  oc status | grep -o "http:.*com"
+  171  curl -w "\n" $(oc status | grep -o "http:.*com")/todo/api/items/1
+  172  cd ~
+  173  lab multicontainer-openshift finish
+  174  lab multicontainer-review start
+  175  cd ~/DO180/labs/multicontainer-review
+  176  source /usr/local/etc/ocp4.config
+  177  oc login -u ${RHT_OCP4_DEV_USER} -p ${RHT_OCP4_DEV_PASSWORD} ${RHT_OCP4_MASTER_API}
+  178  oc new-project ${RHT_OCP4_DEV_USER}-deploy
+  179  podman login registry.redhat.io
+  180  cd images/mysql/
+  181  podman build -t do180-mysql-80-rhel8 .
+  182  podman login quay.io -u ${RHT_OCP4_QUAY_USER}
+  183  podman tag do180-mysql-80-rhel8 quay.io/${RHT_OCP4_QUAY_USER}/do180-mysql-80-rhel8
+  184  podman images
+  185  podman push quay.io/${RHT_OCP4_QUAY_USER}/do180-mysql-80-rhel8
+  186  cd ~/DO180/labs/multicontainer-review
+  187  cd images/quote-php/
+  188  podman build -t do180-quote-php .
+  189  podman tag do180-quote-php quay.io/${RHT_OCP4_QUAY_USER}/do180-quote-php
+  190  podman push quay.io/${RHT_OCP4_QUAY_USER}/do180-quote-php
+  191  cd ~/DO180/labs/multicontainer-review
+  192  vi quote-php-template.json 
+  193  oc create -f quote-php-template.json
+  194  oc get template
+  195  oc process quote-php-persistent -p RHT_OCP4_QUAY_USER=${RHT_OCP4_QUAY_USER} | oc create -f -
+  196  oc get pods -w
+  197  oc get pods
+  198  oc logs mysql
+  199  echo ${RHT_OCP4_QUAY_USER}
+  200  oc get pods
+  201  oc logs mysql
+  202  oc logs quote-php
+  203  oc get deploy
+  204  oc get deployment
+  205  oc delete pods mysql quote-php
+  206  oc process quote-php-persistent -p RHT_OCP4_QUAY_USER=${RHT_OCP4_QUAY_USER} | oc create -f -
+  207  oc delete service quote-php mysql
+  208  oc delete pvc dbinit dbclaim
+  209  oc get pvc
+  210  oc delete pvc dbinit dbclaim
+  211  oc get pvc
+  212  oc get pods
+  213  oc delete pods mysql quote-php
+  214  oc get service
+  215  oc get pods
+  216  oc get pvc
+  217  oc process quote-php-persistent -p RHT_OCP4_QUAY_USER=${RHT_OCP4_QUAY_USER} | oc create -f -
+  218  oc get pods -w
+  219  oc expose svc quote-php
+  220  oc get route
+  221  cd ~
+  222  curl -w "\n" http://quote-php-${RHT_OCP4_DEV_USER}-deploy.${RHT_OCP4_WILDCARD_DOMAIN}
+  223  lab multicontainer-review grade
+  224  lab multicontainer-review finish
+  225  history
+  226  lab troubleshoot-s2i start
+  227  source /usr/local/etc/ocp4.config
+  228  cd DO180-apps/
+  229  git status
+  230  git checkout master
+  231  git status
+  232  git checkout -b troubleshoot-s2i
+  233  git push -u origin troubleshoot-s2i
+  234  git status
+  235  oc login -u "${RHT_OCP4_DEV_USER}" -p "${RHT_OCP4_DEV_PASSWORD}"
+  236  oc new-project ${RHT_OCP4_DEV_USER}-nodejs
+  237  oc new-app --context-dir=nodejs-helloworld https://github.com/${RHT_OCP4_GITHUB_USER}/DO180-apps#troubleshoot-s2i -i nodejs:12 --name nodejs-hello --build-env npm_config_registry=http://${RHT_OCP4_NEXUS_SERVER}/repository/npm-proxy
+  238  oc get pods
+  239  oc get pods -w
+  240  oc logs nodejs-hello-1-build
+  241  oc logs bc/nodejs-hello
+  242  vi nodejs-helloworld/package.json 
+  243  git status
+  244  git add nodejs-helloworld/package.json 
+  245  git status
+  246  git commit -am "Fixed Express release"
+  247  git push
+  248  oc start-build bc/nodejs-hello
+  249  oc get pod
+  250  oc get pods
+  251  vi nodejs-helloworld/package.json 
+  252  oc get pods
+  253  oc logs nodejs-hello-844f548754-bxxsx
+  254  git status
+  255  git add nodejs-helloworld/package.json 
+  256  git status
+  257  git commit -am "Added start up script"
+  258  git push
+  259  oc start-build bc/nodejs-hello
+  260  oc get pods
+  261  oc get pods -w
+  262  oc get pods
+  263  oc logs nodejs-hello-7cb8785fdc-pxrsm
+  264  oc expose svc/nodejs-hello
+  265  curl -w "\n" http://nodejs-hello-${RHT_OCP4_DEV_USER}-nodejs.${RHT_OCP4_WILDCARD_DOMAIN}
+  266  lab troubleshoot-s2i finish
+  267  lab troubleshoot-container start
+  268  vi ../DO180/labs/troubleshoot-container/conf/httpd.conf 
+  269  wc ../DO180/labs/troubleshoot-container/conf/httpd.conf 
+  270  vi ../DO180/labs/troubleshoot-container/conf/httpd.conf 
+  271  cd ../DO180/labs/troubleshoot-container/
+  272  ls
+  273  podman images
+  274  podman build -t troubleshoot-container .
+  275  cd ~
+  276  podman images
+  277  podman run \
+  278  podman run --name troubleshoot-container -d -p 10080:80 troubleshoot-container
+  279  podman ps
+  280  podman logs -f troubleshoot-container
+  281  curl http://127.0.0.1:10080
+  282  podman logs -f troubleshoot-container
+  283  lab troubleshoot-container finish
+  284  lab troubleshoot-review start
+  285  source /usr/local/etc/ocp4.config
+  286  cd DO180-apps/
+  287  git status
+  288  git checkout master
+  289  git checkout -b troubleshoot-review
+  290  git push -u origin troubleshoot-review
+  291  oc login -u "${RHT_OCP4_DEV_USER}" -p "${RHT_OCP4_DEV_PASSWORD}"
+  292  oc new-project ${RHT_OCP4_DEV_USER}-nodejs-app
+  293  oc new-app --name nodejs-dev https://github.com/${RHT_OCP4_GITHUB_USER}/DO180-apps#troubleshoot-review -i nodejs:12 --context-dir=nodejs-app --build-env npm_config_registry=http://${RHT_OCP4_NEXUS_SERVER}/repository/npm-proxy
+  294  oc logs -f bc/nodejs-dev
+  295  oc get pods
+  296  cd nodejs-app/
+  297  sed -i s/4.20/4.x/ package.json
+  298  git status
+  299  git add package.json 
+  300  git status
+  301  git commit -am "Fixed Express release"
+  302  git push
+  303  oc start-build bc/nodejs-dev
+  304  oc logs -f bc/nodejs-dev
+  305  oc get pod
+  306  oc logs -f deployment/nodejs-dev
+  307  sed -i s/http-error/html-errors/ server.js
+  308  git status
+  309  git add server.js 
+  310  git commit -am "Fixed module typo"
+  311  git push
+  312  oc start-build bc/nodejs-dev
+  313  oc logs -f bc/nodejs-dev
+  314  oc get pods -w
+  315  oc get pods
+  316  oc expose svc nodejs-dev
+  317  curl -w "\n" http://nodejs-dev-${RHT_OCP4_DEV_USER}-nodejs-app.${RHT_OCP4_WILDCARD_DOMAIN}
+  318  curl nodejs-dev-${RHT_OCP4_DEV_USER}-nodejs-app.${RHT_OCP4_WILDCARD_DOMAIN}
+  319  oc logs -f deployment/nodejs-dev
+  320  sed -i s/process.environment/process.env/ server.js
+  321  vi server.js 
+  322  git status
+  323  git add server.js 
+  324  git commit -am "Fixed process.env"
+  325  git push
+  326  oc start-build bc/nodejs-dev
+  327  oc logs -f bc/nodejs-dev
+  328  oc get pod
+  329  curl nodejs-dev-${RHT_OCP4_DEV_USER}-nodejs-app.${RHT_OCP4_WILDCARD_DOMAIN}
+  330  lab troubleshoot-review grade
+  331  lab troubleshoot-review finish
+  332  history
+  333  lab comprehensive-review start
+  334  cd /home/student/DO180/labs/comprehensive-review/image
+  335  vi get-nexus-bundle.sh 
+  336  ./get-nexus-bundle.sh 
+  337  ls
+  338  vi Containerfile
+  339  ls
+  340  vi Containerfile 
+  341  podman build --layers=false -t nexus .
+  342  podman images
+  343  cd /home/student/DO180/labs/comprehensive-review/deploy/local
+  344  vi run-persistent.sh 
+  345  ./run-persistent.sh 
+  346  podman ps
+  347  podman ps --format="{{.ID}} {{.Names}} {{.Image}}"
+  348  podman logs elastic_mccarthy  | grep JettyServer
+  349  curl -v 127.0.0.1:18081/nexus/ 2>&1 | grep -E 'HTTP|<title>'
+  350  podman rm -f elastic_mccarthy
+  351  pwd
+  352  podman login -u ${RHT_OCP4_QUAY_USER} quay.io
+  353  echo ${RHT_OCP4_QUAY_USER}
+  354  source /usr/local/etc/ocp4.config
+  355  echo ${RHT_OCP4_QUAY_USER}
+  356  podman login -u ${RHT_OCP4_QUAY_USER} quay.io
+  357  podman push localhost/nexus:latest quay.io/${RHT_OCP4_QUAY_USER}/nexus:latest
+  358  cd ~/DO180/labs/comprehensive-review/deploy/openshift
+  359  oc login -u ${RHT_OCP4_DEV_USER} -p ${RHT_OCP4_DEV_PASSWORD} ${RHT_OCP4_MASTER_API}
+  360  oc new-project ${RHT_OCP4_DEV_USER}-review
+  361  export RHT_OCP4_QUAY_USER
+  362  echo RHT_OCP4_QUAY_USER
+  363  envsubst < resources/nexus-deployment.yaml | oc create -f -
+  364  vi resources/nexus-deployment.yaml 
+  365  oc get pod
+  366  oc get pods
+  367  oc expose svc/nexus
+  368  oc get route -o yaml
+  369  echo ${RHT_OCP4_DEV_USER}
+  370  echo ${RHT_OCP4_WILDCARD_DOMAIN}
+  371  lab comprehensive-review grade
+  372  lab comprehensive-review finish
+  373  pwd
+  374  cd ~/DO180-apps/
+  375  ls
+  376  git status
+  377  git checkout master
+  378  ls
+  379  history > hist2.txt
