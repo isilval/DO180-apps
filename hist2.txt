@@ -377,3 +377,39 @@
   377  git checkout master
   378  ls
   379  history > hist2.txt
+  380  vi hist2.txt 
+  381  git status
+  382  git add hist2.txt
+  383  git status
+  384  git commit -m "Save command history"
+  385  git push
+  386  history
+  387  lab appendix-microservices start
+  388  cd ~/DO180/labs/appendix-microservices/apps/html5/
+  389  mv ~/DO180/labs/appendix-microservices/apps/nodejs/todo/* ~/DO180/labs/appendix-microservices/apps/html5/src/
+  390  vi /home/student/DO180/labs/appendix-microservices/apps/html5/src/script/item.js
+  391  podman login registry.redhat.io
+  392  cd ~/DO180/labs/appendix-microservices/deploy/html5
+  393  cat build.sh 
+  394  ./build.sh 
+  395  podman images
+  396  vi /home/student/DO180/labs/appendix-microservices/apps/nodejs/models/db.js
+  397  vi /home/student/DO180/labs/appendix-microservices/apps/nodejs/package.json
+  398  vi /home/student/DO180/labs/appendix-microservices/apps/nodejs/app.js
+  399  cd ~/DO180/labs/appendix-microservices/deploy/nodejs
+  400  cat build.sh 
+  401  ./build.sh 
+  402  podman images
+  403  cd linked/
+  404  cat run.sh 
+  405  ./run.sh 
+  406  podman ps
+  407  curl -w "\n" 127.0.0.1:30080/todo/api/items/1
+  408  cd ~
+  409  lab appendix-microservices finish
+  410  podman images
+  411  podman ps -a
+  412  history | tail -50
+  413  cd ~/DO180-apps/
+  414  ls
+  415  history > hist2.txt
