@@ -1,0 +1,87 @@
+    1  lab install-troubleshoot start
+    2  source /usr/local/etc/ocp4.config
+    3  oc login -u kubeadmin -p ${RHT_OCP4_KUBEADM_PASSWD} https://api.ocp4.example.com:6443
+    4  oc get nodes
+    5  oc adm top node
+    6  oc describe node master01
+    7  oc get ns
+    8  oc get pod -n openshift-image-registry
+    9  oc logs --tail 3 -n openshift-image-registry cluster-image-registry-operator-64687b967c-hdz4t
+   10  oc logs --tail 1 -n openshift-image-registry image-registry-64d7f786c8-rdt6k
+   11  oc adm node-logs --tail 1 -u kubelet master01
+   12  oc debug node/master01
+   13  exit
+   14  oc debug node/master01
+   15  oc projects
+   16  oc project install-troubleshoot
+   17  history
+   18  oc get pods
+   19  oc get pod
+   20  oc status
+   21  oc get events
+   22  podman login registry.redhat.io
+   23  skopeo inspect docker://registry.redhat.io/rhel8/postgresq-13:1
+   24  skopeo inspect docker://registry.redhat.io/rhel8/postgresql-13:1
+   25  oc edit deployment/psql
+   26  oc status
+   27  oc get pods
+   28  lab install-troubleshoot finish
+   29  ls
+   30  ls DO280/
+   31  ls DO280/labs/
+   32  git clone https://github.com/isilval/DO180-apps
+   33  ls
+   34  ls DO180-apps/
+   35* rm -rf DO280-apps/
+   36  git clone https://github.com/isilval/DO280-apps
+   37  ls
+   38  lab install-storage start
+   39  source /usr/local/etc/ocp4.config
+   40  oc login -u kubeadmin -p ${RHT_OCP4_KUBEADM_PASSWD} https://api.ocp4.example.com:6443
+   41  oc new-project install-storage
+   42  oc project
+   43  oc get storageclass
+   44  oc get storageclass -n default
+   45  oc get storageclass -n install-storage
+   46  oc new-app --name postgresql-persistent    --docker-image registry.redhat.io/rhel8/postgresql-13:1-7    -e POSTGRESQL_USER=redhat    -e POSTGRESQL_PASSWORD=redhat123 -e POSTGRESQL_DATABASE=persistentdb
+   47  wc DO280/labs/install-storage/commands.txt
+   48  vi DO280/labs/install-storage/commands.txt
+   49  ls DO280/labs/
+   50  ls DO280/labs/install-storage/
+   51  oc get pvc
+   52  oc get pv
+   53  oc set volumes deployment/postgresql-persistent --add --name postgresql-storage --type pvc --claim-class nfs-storage --claim-mode rwo --claim-size 10Gi --mount-path /var/lib/pgsql --claim-name postgresql-storage
+   54  oc get pvc
+   55  oc get pv
+   56  cd ~/DO280/labs/install-storage
+   57  ls
+   58  vi init_data.sh
+   59  vi init_data.sql 
+   60  ./init_data.sh 
+   61  vi check_data.sh 
+   62  ./check_data.sh 
+   63  oc delete all -l app=postgresql-persistent
+   64  ./check_data.sh 
+   65  vi init_data.sql 
+   66  oc new-app --name postgresql-persistent2 --docker-image registry.redhat.io/rhel8/postgresql-13:1-7 -e POSTGRESQL_USER=redhat   -e POSTGRESQL_PASSWORD=redhat123 -e POSTGRESQL_DATABASE=persistentdb
+   67  ./check_data.sh 
+   68  vi check_data.sh 
+   69  oc set volumes deployment/postgresql-persistent2 --add --name postgresql-storage --type pvc --claim-name postgresql-storage --mount-path /var/lib/pgsql
+   70  ./check_data.sh 
+   71  oc delete all -l app=postgresql-persistent2
+   72  oc delete pvc/postgresql-storage
+   73  cd ~
+   74  lab install-storage finish
+   75  git clone https://github.com/isilval/DO180-apps
+   76  cd DO180-apps/
+   77  git branch
+   78  git branches
+   79  git checkout -b storage
+   80  git branches
+   81  git branch
+   82  git status
+   83  ls
+   84  mkdir storage
+   85  cd storage/
+   86  ls
+   87  history > hist3.txt
