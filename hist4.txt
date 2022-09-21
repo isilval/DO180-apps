@@ -1,0 +1,254 @@
+    1  history
+    2  lab auth-provider start
+    3  source /usr/local/etc/ocp4.config
+    4  htpasswd -c -B -b ~/DO280/labs/auth-provider/htpasswd admin redhat
+    5  htpasswd -b ~/DO280/labs/auth-provider/htpasswd developer developer
+    6  vi ~/D280/labs/auth-provider/htpasswd
+    7  ls D*
+    8  ls D280/labs
+    9  ls ~/D280/labs
+   10  vi ~/DO280/labs/auth-provider/htpasswd
+   11  oc login -u kubeadmin -p ${RHT_OCP4_KUBEADM_PASSWD} https://api.ocp4.example.com:6443
+   12  oc get secret -n openshift-config
+   13  oc get secret -n openshift-config | grep local
+   14  oc create secret generic localusers --from-file htpasswd=/home/student/DO280/labs/auth-provider/htpasswd -n openshift-config
+   15  oc get secret -n openshift-config | grep local
+   16  oc adm policy add-cluster-role-to-user cluster-admin admin
+   17  ls ~/DO280/labs/auth-provider
+   18  vi ~/DO280/labs/auth-provider/oauth.yaml 
+   19  cat ~/DO280/labs/auth-provider/oauth.yaml 
+   20  oc get oauth cluster -o yaml > ~/DO280/labs/auth-provider/oauth.yaml
+   21  vi ~/DO280/labs/auth-provider/oauth.yaml 
+   22  oc replace -f ~/DO280/labs/auth-provider/oauth.yaml
+   23  oc login -u admin -p redhat
+   24  oc get nodes
+   25  oc login -u developer -p developer
+   26  oc get nodes
+   27  oc login -u admin -p redhat
+   28  oc get users
+   29  oc get identity
+   30  oc extract secret/localusers -n openshift-config --to ~/DO280/labs/auth-provider/ --confirm
+   31   htpasswd -b ~/DO280/labs/auth-provider/htpasswd    manager redhat
+   32  cat ~/DO280/labs/auth-provider/htpasswd
+   33  oc set data secret/localusers --from-file htpasswd=/home/student/DO280/labs/auth-provider/htpasswd -n openshift-config
+   34  oc login -u manager -p redhat
+   35  oc get nodes
+   36  oc project
+   37  oc new-project auth-provider
+   38  oc login -u developer -p developer
+   39  oc project
+   40  oc delete project auth-provider
+   41  oc login -u admin -p redhat
+   42  oc extract secret/localusers -n openshift-config --to ~/DO280/labs/auth-provider/ --confirm
+   43  MANAGER_PASSWD="$(openssl rand -hex 15)"
+   44  echo $MANAGER_PASSWD
+   45  htpasswd -b ~/DO280/labs/auth-provider/htpasswd manager ${MANAGER_PASSWD}
+   46  oc set data secret/localusers --from-file htpasswd=/home/student/DO280/labs/auth-provider/htpasswd -n openshift-config
+   47  oc login -u manager -p ${MANAGER_PASSWD}
+   48  oc login -u admin -p redhat
+   49  oc extract secret/localusers -n openshift-config --to ~/DO280/labs/auth-provider/ --confirm
+   50  htpasswd -D ~/DO280/labs/auth-provider/htpasswd manager
+   51  oc set data secret/localusers --from-file htpasswd=/home/student/DO280/labs/auth-provider/htpasswd -n openshift-config
+   52  oc get identity
+   53  oc delete identity "myusers:manager"
+   54  oc get identity
+   55  oc get users
+   56  oc delete user manager
+   57  oc get users
+   58  oc login -u manager -p ${MANAGER_PASSWD}
+   59  oc get users
+   60  oc extract secret/localusers -n openshift-config --to -
+   61  oc login -u kubeadmin -p ${RHT_OCP4_KUBEADM_PASSWD}
+   62  oc delete project auth-provider
+   63  oc edit oauth
+   64  oc delete secret localusers -n openshift-config
+   65  oc delete user --all
+   66  oc delete identity --all
+   67  oc get user
+   68  lab auth-provider finish
+   69  history
+   70  clear
+   71  history
+   72  history | grep cluster
+   73  oc get user
+   74  history | grep login
+   75  echo ${RHT_OCP4_KUBEADM_PASSWD}
+   76  echo kubeadmin
+   77  lab auth-rbac start
+   78  oc get user
+   79  oc get identity
+   80  oc login -u admin -p redhat     https://api.ocp4.example.com:6443
+   81  oc get clusterrolebinding -o wide | grep -E 'NAME|self-provisioners'
+   82  oc describe clusterrolebindings self-provisioners
+   83  oc get group system:authenticated:oauth
+   84  oc get group
+   85  oc adm policy remove-cluster-role-from-group    self-provisioner system:authenticated:oauth
+   86  oc describe clusterrolebindings self-provisioners
+   87  oc get clusterrolebinding -o wide | grep -E 'NAME|self-provisioners'
+   88  oc login -u leader -p redhat
+   89  oc new-project test
+   90  oc login -u admin -p redhat
+   91  oc new-project auth-rbac
+   92  oc policy add-role-to-user admin leader
+   93  oc adm groups new dev-group
+   94  oc adm groups add-users dev-group developer
+   95  oc adm groups new qa-group
+   96  oc adm groups add-users qa-group qa-engineer
+   97  oc get group
+   98  oc login -u leader -p redhat
+   99  oc project
+  100  oc policy add-role-to-group edit dev-group
+  101  oc policy add-role-to-group view qa-group
+  102  oc get rolebindings -o wide
+  103  oc get rolebindings
+  104  oc login -u developer -p developer
+  105  oc new-app --name httpd httpd:2.4
+  106  oc status
+  107  oc get pods
+  108  oc policy add-role-to-user edit qa-engineer
+  109  oc login -u qa-engineer -p redhat
+  110  oc scale deployment httpd --replicas 3
+  111  oc login -u admin -p redhat
+  112  oc adm policy add-cluster-role-to-group --rolebinding-name self-provisioners self-provisioner system:authenticated:oauth
+  113  lab auth-rbac finish
+  114  lab auth-review start
+  115  htpasswd -D ~/DO280/labs/auth-review/tmp_users analyst
+  116  for NAME in tester leader admin developer; do htpasswd -b ~/DO280/labs/auth-review/tmp_users ${NAME} 'L@bR3v!ew'; done
+  117  cat ~/DO280/labs/auth-review/tmp_users
+  118  history | tail -10
+  119  oc adm policy add-cluster-role-to-user cluster-admin admin
+  120  source /usr/local/etc/ocp4.config
+  121  oc login -u kubeadmin -p ${RHT_OCP4_KUBEADM_PASSWD} https://api.ocp4.example.com:6443
+  122  oc create secret generic auth-review --from-file htpasswd=/home/student/DO280/labs/auth-review/tmp_users -n openshift-config
+  123  oc get oauth cluster -o yaml > ~/DO280/labs/auth-review/oauth.yaml
+  124  vi DO280/labs/auth-review/oauth.yaml 
+  125  oc replace -f ~/DO280/labs/auth-review/oauth.yaml
+  126  watch oc get pods -n openshift-authentication
+  127  oc get pods -n openshift-authentication
+  128  oc adm policy add-cluster-role-to-user cluster-admin admin
+  129  oc get pods -n openshift-authentication
+  130  oc login -u admin -p 'L@bR3v!ew'
+  131  oc get nodes
+  132  oc login -u developer -p 'L@bR3v!ew'
+  133  oc get nodes
+  134  oc login -u admin -p 'L@bR3v!ew'
+  135  oc adm policy remove-cluster-role-from-group  self-provisioner system:authenticated:oauth
+  136  oc adm groups new managers
+  137  oc adm groups add-users managers leader
+  138  oc adm policy add-cluster-role-to-group  self-provisioner managers
+  139  oc login -u leader -p 'L@bR3v!ew'
+  140  oc new-project auth-review
+  141  oc login -u admin -p 'L@bR3v!ew'
+  142  oc adm groups new developers
+  143  oc adm groups add-users developers developer
+  144  oc policy add-role-to-group edit developers
+  145  oc adm groups new qa
+  146  oc adm groups add-users qa tester
+  147  oc policy add-role-to-group view qa
+  148  lab auth-review grade
+  149  lab auth-review finish
+  150  history
+  151  lab authorization-secrets start
+  152  oc login -u developer -p developer https://api.ocp4.example.com:6443
+  153  oc new-project authorization-secrets
+  154  oc create secret generic mysql --from-literal user=myuser --from-literal password=redhat123   --from-literal database=test_secrets --from-literal hostname=mysql
+  155  oc describe secret mysql
+  156  oc new-app --name mysql --docker-image registry.redhat.io/rhel8/mysql-80:1
+  157  oc get pods -w
+  158  oc logs mysql-66dbbb9f9c-7twqh
+  159  oc set env deployment/mysql --from secret/mysql   --prefix MYSQL_
+  160  oc get pods -w
+  161  oc logs mysql-5986f75bfb-55rpl
+  162  oc set volume deployment/mysql --add --type secret --mount-path /run/secrets/mysql --secret-name mysql
+  163  oc rsh mysql-5986f75bfb-55rpl
+  164  oc get pods
+  165  oc rsh mysql-5dc4ddfd5-vx4cx
+  166  oc logs mysql-5dc4ddfd5-vx4cx
+  167  oc get pods
+  168  oc delete pod mysql-5dc4ddfd5-vx4cx
+  169  oc get pod
+  170  oc logs mysql-5dc4ddfd5-h5595
+  171  oc rsh mysql-5dc4ddfd5-h5595
+  172  oc logs mysql-5dc4ddfd5-h5595
+  173  oc new-app --name quotes   --docker-image quay.io/redhattraining/famous-quotes:2.1
+  174  oc get pods -l deployment=quotes -w
+  175  oc set env deployment/quotes --from secret/mysql --prefix QUOTES_
+  176  oc get pods -l deployment=quotes
+  177  oc get pods
+  178  oc logs quotes-84dfbf966f-zx2fq | head -n2
+  179  oc expose service quotes --hostname quotes.apps.ocp4.example.com
+  180  curl -s http://quotes.apps.ocp4.example.com/env | grep QUOTES_
+  181  curl -s http://quotes.apps.ocp4.example.com/env
+  182  curl -s http://quotes.apps.ocp4.example.com/status
+  183  curl -s http://quotes.apps.ocp4.example.com/random
+  184  oc delete project authorization-secrets
+  185  lab authorization-secrets finish
+  186  oc get scc
+  187  oc login -u admin -p redhat
+  188  oc get scc
+  189  oc describe scc nonroot
+  190  oc describe scc anyuid
+  191  lab authorization-scc start
+  192  oc login -u developer -p developer    https://api.ocp4.example.com:6443
+  193  oc new-project authorization-scc
+  194  oc new-app --name gitlab --docker-image quay.io/redhattraining/gitlab-ce:8.4.3-ce.0
+  195  oc get pods
+  196  oc get pods -w
+  197  oc logs gitlab-7dc4b9898d-bd8pz
+  198  oc logs pod/gitlab-7dc4b9898d-bd8pz
+  199  oc logs gitlab-7dc4b9898d-bd8pz
+  200  oc login -u admin -p redhat
+  201  oc get pod/gitlab-7d67db7875-gcsjl -o yaml | oc adm policy scc-subject-review -f -
+  202  oc get pod/gitlab-7dc4b9898d-bd8pz -o yaml | oc adm policy scc-subject-review -f -
+  203  oc create sa gitlab-sa
+  204  oc adm policy add-scc-to-user anyuid -z gitlab-sa
+  205  oc login -u developer -p developer
+  206  oc set serviceaccount deployment/gitlab gitlab-sa
+  207  oc get pods
+  208  oc expose service/gitlab --port 80 --hostname gitlab.apps.ocp4.example.com
+  209  oc get routes
+  210  curl -s http://gitlab.apps.ocp4.example.com/users/sign_in | grep '<title>'
+  211  oc delete project authorization-scc
+  212  lab authorization-scc finish
+  213  lab authorization-review start
+  214  oc login -u developer -p developer https://api.ocp4.example.com:6443
+  215  oc new-project authorization-review
+  216  oc create secret generic review-secret --from-literal user=wpuser --from-literal password=redhat123 --from-literal database=wordpress
+  217  oc new-app --name mysql --docker-image registry.redhat.io/rhel8/mysql-80:1
+  218  oc set env deployment/mysql --prefix MYSQL_ --from secret/review-secret
+  219  watch oc get pods
+  220  oc get pods
+  221  oc logs mysql-6bb687fcbb-hhbg7
+  222  oc new-app --name wordpress --docker-image quay.io/redhattraining/wordpress:5.7-php7.4-apache -e WORDPRESS_DB_HOST=mysql  -e WORDPRESS_DB_NAME=wordpress -e WORDPRESS_TITLE=auth-review -e WORDPRESS_USER=wpuser -e WORDPRESS_PASSWORD=redhat123 -e WORDPRESS_EMAIL=student@redhat.com -e WORDPRESS_URL=wordpress-review.apps.ocp4.example.com
+  223  oc set env deployment/wordpress --prefix WORDPRESS_DB_ --from secret/review-secret
+  224  watch oc get pods -l deployment=wordpress
+  225  oc get pods
+  226  oc logs wordpress-c5bb48f5-hjngd
+  227  oc login -u admin -p redhat
+  228  oc get pod
+  229  oc get pod/mysql-6bb687fcbb-hhbg7 -o yaml | oc adm policy scc-subject-review -f -
+  230  oc create serviceaccount wordpress-sa
+  231  oc adm policy add-scc-to-user anyuid -z wordpress-sa
+  232  oc set serviceaccount deployment/wordpress wordpress-sa
+  233  watch oc get pods -l deployment=wordpress
+  234  oc get pods
+  235  oc logs wordpress-d8cdd67c9-pfvhn
+  236  oc get pods -l deployment=wordpress
+  237  oc expose service/wordpress   --hostname wordpress-review.apps.ocp4.example.com
+  238  curl -s http://wordpress-review.apps.ocp4.example.com/wp-admin/install.php | grep Installation
+  239  lab authorization-review grade
+  240  lab authorization-review finish
+  241  ls -last
+  242  git clone https://github.com/isilval/DO180-apps
+  243  cd DO180-apps/
+  244  ls
+  245  git status
+  246  git branches
+  247  git branche
+  248  git branch
+  249  git checkout -b storage
+  250  git branch
+  251  ls
+  252  git status
+  253  ls
+  254  history > hist4.txt
