@@ -252,3 +252,15 @@
   252  git status
   253  ls
   254  history > hist4.txt
+  255  vi hist4.txt 
+  256  git status
+  257  git add hist4.txt 
+  258  git commit -m "History 4"
+  259  git push
+  260  git push --set-upstream origin storage
+  261  git checkout -b admin2
+  262  ls
+  263  git status
+  264  touch hist4.txt 
+  265  git status
+  266  history > hist4.txt
