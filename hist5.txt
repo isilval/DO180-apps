@@ -1,0 +1,194 @@
+    1  history
+    2  lab network-ingress start
+    3  oc login -u developer -p developer https://api.ocp4.example.com:6443
+    4  oc new-project network-ingress
+    5  oc project
+    6  oc projects
+    7  oc create -f ~/DO280/labs/network-ingress/todo-app-v1.yaml
+    8  ls
+    9  vi DO280/labs/network-ingress/todo-app-v1.yaml 
+   10  oc status
+   11  oc get pods
+   12  oc status
+   13  oc expose svc todo-http   --hostname todo-http.apps.ocp4.example.com
+   14  oc get routes
+   15  cd ~/DO280/labs/network-ingress
+   16  oc create route edge todo-https --service todo-http --hostname todo-https.apps.ocp4.example.com
+   17  oc get routes
+   18  curl -I -v https://todo-https.apps.ocp4.example.com
+   19  oc get svc todo-http -o jsonpath="{.spec.clusterIP}{'\n'}"
+   20  oc debug -t deployment/todo-http --image registry.access.redhat.com/ubi8/ubi:8.4
+   21  oc delete route todo-https
+   22  oc get routes
+   23  cd certs
+   24  ls -l
+   25  openssl genrsa -out training.key 2048
+   26  ls -l
+   27  openssl req -new    -subj "/C=US/ST=North Carolina/L=Raleigh/O=Red Hat/ CN=todo-https.apps.ocp4.example.com"   -key training.key -out training.csr
+   28  ls -l
+   29  rm training.csr 
+   30  openssl req -new -subj "/C=US/ST=North Carolina/L=Raleigh/O=Red Hat/CN=todo-https.apps.ocp4.example.com" -key training.key -out training.csr
+   31  ls -l
+   32  openssl x509 -req -in training.csr -passin file:passphrase.txt -CA training-CA.pem -CAkey training-CA.key -CAcreateserial -out training.crt -days 1825 -sha256 -extfile training.ext
+   33  ls -lrt
+   34  cd ~/DO280/labs/network-ingress
+   35  oc create secret tls todo-certs --cert certs/training.crt --key certs/training.key
+   36  oc create -f todo-app-v2.yaml
+   37  vi todo-app-v2.yaml 
+   38  oc projects
+   39  oc get pods
+   40  oc describe pod todo-https-7d59b58dcf-b2rft
+   41  oc describe pod todo-https-7d59b58dcf-b2rft | grep Mounts -A2
+   42  oc create route passthrough todo-https --service todo-https --port 8443 --hostname todo-https.apps.ocp4.example.com
+   43  curl -vvI --cacert certs/training-CA.pem   https://todo-https.apps.ocp4.example.com
+   44  oc get svc todo-https -o jsonpath="{.spec.clusterIP}{'\n'}"
+   45  oc debug -t deployment/todo-https --image registry.access.redhat.com/ubi8/ubi:8.4
+   46  cd
+   47  oc delete project network-ingress
+   48  lab network-ingress finish
+   49  oc project
+   50  ip a | grep 172.25.250.9
+   51  sudo tcpdump -i eth0 -A -n port 80 | grep js
+   52  oc project
+   53  ~/DO280/labs/network-policy/display-project-info.sh
+   54  history
+   55  lab network-policy start
+   56  oc login -u developer -p developer https://api.ocp4.example.com:6443
+   57  oc new-project network-policy
+   58  oc new-app --name hello --docker-image quay.io/redhattraining/hello-world-nginx:v1.0
+   59  oc new-app --name test --docker-image quay.io/redhattraining/hello-world-nginx:v1.0
+   60  oc get deploy
+   61  oc get pods
+   62  oc expose service hello
+   63  cat ~/DO280/labs/network-policy/display-project-info.sh
+   64  ~/DO280/labs/network-policy/display-project-info.sh
+   65  oc get service
+   66  oc rsh test-c4d74c9d5-5pq9s curl 10.10.0.116:8080 | grep Hello
+   67  ~/DO280/labs/network-policy/display-project-info.sh
+   68  oc rsh test-54f6b56774-crg9c curl 10.10.0.115:8080 | grep Hello
+   69  oc rsh test-54f6b56774-crg9c curl 172.30.99.121:8080 | grep Hello
+   70  curl -s hello-network-policy.apps.ocp4.example.com | grep Hello
+   71  oc new-project network-test
+   72  oc new-app --name sample-app --docker-image    quay.io/redhattraining/hello-world-nginx:v1.0
+   73  oc project
+   74  oc get deploy
+   75  oc rsh sample-app-5645b95bc8-pm5sm curl 10.10.0.115:8080 | grep Hello
+   76  oc rsh sample-app-5645b95bc8-pm5sm curl 10.10.0.116:8080 | grep Hello
+   77  oc project network-policy
+   78  cd ~/DO280/labs/network-policy/
+   79  ls
+   80  vi deny-all.yaml 
+   81  diff deny-all.yaml ~/DO280/solutions/network-policy/deny-all.yaml 
+   82  oc get np
+   83  oc get networkpolicy
+   84  oc create -f deny-all.yaml
+   85  oc get networkpolicy
+   86  oc get np
+   87  curl -s hello-network-policy.apps.ocp4.example.com | grep Hello
+   88  curl -s hello-network-policy.apps.ocp4.example.com
+   89  oc project
+   90  oc rsh test-54f6b56774-crg9c curl 10.10.0.115:8080 | grep Hello
+   91  oc project network-test
+   92  oc rsh sample-app-5645b95bc8-pm5sm curl 10.10.0.116:8080 | grep Hello
+   93  ls
+   94  vi allow-specific.yaml 
+   95  vi ~/DO280/solutions/network-policy/allow-specific.yaml  allow-specific.yaml 
+   96  diff ~/DO280/solutions/network-policy/allow-specific.yaml  allow-specific.yaml 
+   97  vi allow-specific.yaml 
+   98  diff ~/DO280/solutions/network-policy/allow-specific.yaml  allow-specific.yaml 
+   99  oc project
+  100  oc create -n network-policy -f allow-specific.yaml
+  101  oc get networkpolicies -n network-policy
+  102  oc login -u admin -p redhat
+  103  oc label namespace network-test name=network-test
+  104  oc describe namespace network-test
+  105  oc login -u developer -p developer
+  106  oc rsh sample-app-5645b95bc8-pm5sm curl 10.10.0.115:8080 | grep Hello
+  107  oc rsh sample-app-5645b95bc8-pm5sm curl 10.10.0.115:8181 | grep Hello
+  108  oc rsh sample-app-5645b95bc8-pm5sm curl 10.10.0.115:8080 | grep Hello
+  109  oc rsh sample-app-5645b95bc8-pm5sm curl 10.10.0.116:8080 | grep Hello
+  110  vi allow-from-openshift-ingress.yaml 
+  111  diff allow-from-openshift-ingress.yaml ~/DO280/solutions/network-policy/allow-from-openshift-ingress.yaml 
+  112  oc get networkpolicies -n network-policy
+  113  oc create -n network-policy -f allow-from-openshift-ingress.yaml
+  114  oc get networkpolicies -n network-policy
+  115  oc login -u admin -p redhat
+  116  oc label namespace default network.openshift.io/policy-group=ingress
+  117  curl -s hello-network-policy.apps.ocp4.example.com | grep Hello
+  118  cd
+  119  lab network-policy finish
+  120  history
+  121  oc login -u developer -p developer
+  122  oc new-project network-review
+  123  lab network-review start
+  124  oc delete project network-review
+  125  lab network-review start
+  126  oc new-project network-review
+  127  cd DO280/labs/network-review/
+  128  ls
+  129  vi php-http.yaml 
+  130  oc create -f php-http.yaml 
+  131  oc get pods
+  132  oc expose svc php-http --hostname php-http.apps.ocp4.example.com
+  133  oc get routes
+  134  vi deny-all.yaml 
+  135  curl  http://php-http.apps.ocp4.example.com
+  136  oc create -f deny-all.yaml 
+  137  curl  http://php-http.apps.ocp4.example.com
+  138  vi allow-from-openshift-ingress.yaml 
+  139  oc create -f allow-from-openshift-ingress.yaml 
+  140  oc login -u admin -p redhat
+  141  oc label namespace default network.openshift.io/policy-group=ingress
+  142  for X in {1..4}; do curl -s http://php-http.apps.ocp4.example.com | grep "PHP"; done
+  143  oc login -u developer -p developer
+  144  ls
+  145  cd certs/
+  146  ls
+  147  more openssl-commands.txt 
+  148  openssl req -new -key training.key    -subj "/C=US/ST=North Carolina/L=Raleigh/O=Red Hat/CN=php-https.apps.ocp4.example.com" -out training.csr
+  149  ls -last
+  150  date
+  151  openssl x509 -req -in training.csr -CA training-CA.pem -CAkey training-CA.key -CAcreateserial -passin file:passphrase.txt -out training.crt -days 3650 -sha256 -extfile training.ext
+  152  ls -last
+  153  cd ..
+  154  pwd
+  155  oc create secret tls php-certs --cert certs/training.crt --key certs/training.key
+  156  oc get secret
+  157  vi php-https.yaml 
+  158  create -f php-https.yaml 
+  159  oc create -f php-https.yaml 
+  160  vi php-https.yaml 
+  161  oc create -f php-https.yaml 
+  162  vi php-https.yaml 
+  163  vi php-http.yaml 
+  164  vi php-https.yaml 
+  165  oc create -f php-https.yaml 
+  166  oc get svc
+  167  oc delete svc php-https
+  168  oc create -f php-https.yaml 
+  169  oc get deployment
+  170  oc delete deploy php-https
+  171  oc get deployment
+  172  oc get pods
+  173  oc create -f php-https.yaml 
+  174  oc get deploy
+  175  oc delete deploy php-https
+  176  oc delete svc php-https
+  177  oc get pod
+  178  oc create -f php-https.yaml 
+  179  oc get pods
+  180  oc create route passthrough php-https --service php-https --port 8443 --hostname php-https.apps.ocp4.example.com
+  181  oc get routes
+  182  curl -v --cacert certs/training-CA.pem https://php-https.apps.ocp4.example.com
+  183  cd
+  184  lab network-review grade
+  185  lab network-review finish
+  186  pwd
+  187  ls
+  188  ls DO280/
+  189  git clone https://github.com/isilval/DO180-apps
+  190  ls
+  191  cd DO180-apps/
+  192  ls
+  193  git status
+  194  history > hist5.txt
